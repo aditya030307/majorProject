@@ -15,7 +15,8 @@ const ExpressError  = require("./utils/ExpressError.js");
 
 
 const session = require("express-session")
-const MongoStore = require('connect-mongo');
+const MongoDBStore = require("connect-mongodb-session")(session);
+// const MongoStore = require('connect-mongo');
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -49,27 +50,29 @@ main()
 async function main() {
   await mongoose.connect(dbUrl);
 }
-const store = MongoStore.create({
-    mongoUrl: dbUrl,
-    crypto:{
-        secret: process.env.SECRET,
-    },
-    touchAfter: 24 * 3600,
-})
-store.on("error",() =>{
-    console.log("ERROR in MONGO SESSION STORE",err)
-})
-// const store = MongoStore.create({
-//     mongoUrl: dbUrl,   // your MongoDB Atlas connection string
-//         secret: "mysupersecretecode",
-//     touchAfter: 24 * 3600 // time period in seconds
+// const store = new MongoDBStore({
+//     uri:  dbUrl,      // MongoDB connection string
+//     collection: "sessions",             // Collection name
+//     expires: 1000 * 60 * 60 * 24,      // 1 day in milliseconds
 // });
 
-// store.on("error", function (err) {
+// store.on("error", (err) => {
+//     console.log("❌ ERROR in MONGO SESSION STORE", err);
+// });
+
+// const store = MongoStore.create({
+//     mongoUrl: dbUrl,
+//     crypto: {
+//         secret: process.env.SECRET || "fallbacksecret",
+//     },
+//     touchAfter: 24 * 3600, // 1 day
+// });
+
+// store.on("error", (err) => {
 //     console.log("❌ ERROR in MONGO SESSION STORE", err);
 // });
 const sessionOptions = {
-    store,
+    //store,
     secret: process.env.SECRET,
     resave:false,
     saveUninitialized: true,
