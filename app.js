@@ -61,9 +61,7 @@ store.on("error",() =>{
 })
 // const store = MongoStore.create({
 //     mongoUrl: dbUrl,   // your MongoDB Atlas connection string
-//     crypto: {
 //         secret: "mysupersecretecode",
-//     },
 //     touchAfter: 24 * 3600 // time period in seconds
 // });
 
@@ -71,7 +69,7 @@ store.on("error",() =>{
 //     console.log("❌ ERROR in MONGO SESSION STORE", err);
 // });
 const sessionOptions = {
-    //store,
+    store,
     secret: process.env.SECRET,
     resave:false,
     saveUninitialized: true,
