@@ -56,11 +56,13 @@ body{
     align-items: space-evenly;
 }
 /* cards */
-.card{
+.listing-card{
     border: none !important;
     margin-bottom: 2rem;
 }
 .card-img-top{
+    height: 250px;       /* fixed height for all images */
+  object-fit: cover;  
     border-radius: 1rem !important;
     width: 100%;
     object-fit: cover !important;
