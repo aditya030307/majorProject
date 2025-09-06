@@ -11,33 +11,20 @@ const methodOverride = require("method-override");
 const ejsmate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError  = require("./utils/ExpressError.js");
-
-
-
 const session = require("express-session")
-const MongoDBStore = require("connect-mongodb-session")(session);
-// const MongoStore = require('connect-mongo');
+// const MongoDBStore = require("connect-mongodb-session")(session);
+const MongoStore = require('connect-mongo');
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
+const listingRouter = require("./routes/listing.js")
 const reviewRouter = require("./routes/review.js")
 
-const listingRouter = require("./routes/listing.js")
+
 const userRouter = require("./routes/user.js")
-const dns = require("dns");
-dns.setDefaultResultOrder("ipv4first");
-
-
-app.use(methodOverride("_method"));
-
-app.use(express.static(path.join(__dirname,"/public")));
-app.engine('ejs', ejsmate);
-app.set("view engine","ejs");
-app.set("views",path.join(__dirname,"views"));
-app.use(express.urlencoded({extended:true}));
-
-// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+// const dns = require("dns");
+// dns.setDefaultResultOrder("ipv4first");
 const dbUrl = process.env.ATLASDB_URL;
 
 main()
@@ -48,31 +35,34 @@ main()
     console.log(err);
 })
 async function main() {
-  await mongoose.connect(dbUrl);
+ mongoose.set('strictQuery', false);
+   await mongoose.connect(dbUrl);
 }
-// const store = new MongoDBStore({
-//     uri:  dbUrl,      // MongoDB connection string
-//     collection: "sessions",             // Collection name
-//     expires: 1000 * 60 * 60 * 24,      // 1 day in milliseconds
-// });
 
-// store.on("error", (err) => {
-//     console.log("❌ ERROR in MONGO SESSION STORE", err);
-// });
 
-// const store = MongoStore.create({
-//     mongoUrl: dbUrl,
-//     crypto: {
-//         secret: process.env.SECRET || "fallbacksecret",
-//     },
-//     touchAfter: 24 * 3600, // 1 day
-// });
+app.set("view engine","ejs");
+app.set("views",path.join(__dirname,"views"));
+app.use(express.urlencoded({extended:true}));
+app.use(methodOverride("_method"));
+app.engine('ejs', ejsmate);
+app.use(express.static(path.join(__dirname,"/public")));
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
-// store.on("error", (err) => {
-//     console.log("❌ ERROR in MONGO SESSION STORE", err);
-// });
+
+
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto: {
+        secret: process.env.SECRET ,
+    },
+    touchAfter: 24 * 3600, // 1 day
+});
+
+store.on("error", () => {
+    console.log(" ERROR in MONGO SESSION STORE", err);
+});
 const sessionOptions = {
-    //store,
+    store,
     secret: process.env.SECRET,
     resave:false,
     saveUninitialized: true,
@@ -107,10 +97,10 @@ app.use((req,res,next) =>{
 //     let registeredUser = await User.register(fakeUser,"helloworld");
 //     res.send(registeredUser);
 // });
-
+app.use("/listings",listingRouter)
 app.use("/listings/:id/reviews",reviewRouter)
 
-app.use("/listings",listingRouter)
+
 app.use("/",userRouter);
 
 app.use((req, res, next) => {
